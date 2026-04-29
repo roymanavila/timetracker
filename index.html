@@ -1,15 +1,295 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f1117"/>
-    <link rel="manifest" href="./manifest.json" />
-    <title>SS Time Tracker</title>
-    <script type="module" crossorigin src="./assets/index-fc97b2c3.js"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    
-  </body>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#1a0a0e"/>
+  <title>SS Time Tracker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #1a0a0e; color: #f5ede8; font-family: 'DM Sans', system-ui, sans-serif; }
+    select option { background: #200c14; color: #f5ede8; }
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+const { createClient } = supabase;
+
+const sb = createClient(
+  'https://flayrgbxeyumyefstezi.supabase.co',
+  'sb_publishable_3EWLFqxyZoRnevbczZ7Fhg_PUUu8mYw'
+);
+
+const SS_CLIENTS_DEFAULT = [
+  {id:"c1",name:"SunEnergy",address:"88 Fullarton Rd, Norwood SA 5067",type:"Comercial",rate:35,currency:"AUD"},
+  {id:"c2",name:"Jemma",address:"31 Queen St, Norwood SA 5067",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c3",name:"Andrew",address:"4 Fuller Ct, Walkerville SA 5081",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c4",name:"Robert",address:"41 Observation Dr, Highbury SA 5089",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c5",name:"Lee",address:"1A Chasewater Street, Lower Mitcham SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c6",name:"Helen UC",address:"U City, 10 Pirie St, Adelaide SA 5000",type:"Comercial",rate:35,currency:"AUD"},
+  {id:"c7",name:"Helen Xydias",address:"118 Cambridge Terrace, SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c8",name:"Olivia",address:"28A Fifth Ave, Cheltenham SA 5014",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c9",name:"Pip",address:"30 Augusta Street, Maylans SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c10",name:"Al",address:"8 Yeltana Ave, Wattle Park SA 5066",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c11",name:"Rebecca",address:"18 Clifton St, Camden Park SA 5038",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c12",name:"Desley",address:"11 Wilkinson Ave, Somerton Park SA 5044",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c13",name:"Ella Billich",address:"16 Gladys St, Clarence Gardens SA 5039",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c14",name:"Glow DC",address:"352 Morphett Rd, Warradale SA 5046",type:"Comercial",rate:35,currency:"AUD"},
+  {id:"c15",name:"Chloe",address:"16 Wentworth St, Lockleys SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c16",name:"Michelle",address:"35 Harding St, SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c17",name:"Jodie",address:"13A Verdun St, Beulah Park SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c18",name:"Barbara",address:"27 Daws Rd, Mitchell Park SA 5043",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c19",name:"Sam",address:"1 Farrell St, Glenelg SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c20",name:"Stacy",address:"5 Dudley Ave, SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c21",name:"Amber",address:"7 Tarlton St, Somerton Park SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c22",name:"Aboutface",address:"74 Gawler St, Mount Barker SA 5251",type:"Comercial",rate:35,currency:"AUD"},
+  {id:"c23",name:"Helen & Craig",address:"17 McLaren Street, Adelaide SA",type:"Residencial",rate:35,currency:"AUD"},
+  {id:"c24",name:"Jenny",address:"70 Carlisle Road, Westbourne Park SA",type:"Residencial",rate:30,currency:"AUD"},
+  {id:"c25",name:"Alli",address:"123 Morgan Ave, Melrose Park SA",type:"Residencial",rate:30,currency:"AUD"},
+];
+
+const uid = () => Math.random().toString(36).slice(2,10);
+const today = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => { if(!d) return ""; const [y,m,dd]=d.split("-"); return `${dd}/${m}/${y}`; };
+const fmtTime = t => { if(!t) return ""; const [h,m]=t.split(":"); const hh=parseInt(h); return `${hh>12?hh-12:hh||12}:${m} ${hh>=12?"PM":"AM"}`; };
+const calcHours = (s,e) => { if(!s||!e) return 0; const [sh,sm]=s.split(":").map(Number); const [eh,em]=e.split(":").map(Number); const d=(eh*60+em)-(sh*60+sm); return d>0?Math.round(d/60*100)/100:0; };
+const weekKey = d => { const dt=new Date(d+"T12:00:00"); const day=dt.getDay(); const mon=new Date(dt); mon.setDate(dt.getDate()-(day===0?6:day-1)); return mon.toISOString().slice(0,10); };
+const weekLabel = k => { const s=new Date(k+"T12:00:00"),e=new Date(s); e.setDate(s.getDate()+6); return `${s.getDate()} ${s.toLocaleString("es",{month:"short"})} - ${e.getDate()} ${e.toLocaleString("es",{month:"short",year:"numeric"})}`; };
+
+const C = {bg:"#1a0a0e",card:"#2a1018",border:"#4a1828",accentBright:"#c42040",text:"#f5ede8",textMuted:"#a08070",green:"#80d880",inputBg:"#200c14"};
+const SVC = ["Limpieza Regular","Limpieza Profunda","Limpieza Post-Obra","Limpieza Fin de Contrato","Otro"];
+const TABS = ["Registrar","Clientes","Facturacion","Archivo"];
+const ICONS = ["📋","👥","💰","📦"];
+
+function App() {
+  const [clients,setClients]=useState([]);
+  const [entries,setEntries]=useState([]);
+  const [archives,setArchives]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [tab,setTab]=useState(0);
+  const [toast,setToast]=useState(null);
+  const [userName,setUserName]=useState(()=>localStorage.getItem("ssc_username")||"");
+  const [showModal,setShowModal]=useState(false);
+  const [tempName,setTempName]=useState("");
+
+  const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800);};
+
+  useEffect(()=>{loadData();},[]);
+  useEffect(()=>{if(!userName)setShowModal(true);},[userName]);
+
+  const loadData=async()=>{
+    setLoading(true);
+    try {
+      const [{data:cls},{data:ens},{data:arcs}]=await Promise.all([
+        sb.from("clients").select("*").order("name"),
+        sb.from("entries").select("*").order("date",{ascending:false}),
+        sb.from("archives").select("*").order("id",{ascending:false}),
+      ]);
+      if(cls?.length) setClients(cls);
+      else { const {data:ins}=await sb.from("clients").insert(SS_CLIENTS_DEFAULT).select(); setClients(ins||SS_CLIENTS_DEFAULT); }
+      setEntries(ens||[]);
+      setArchives(arcs||[]);
+    } catch(e){showToast("Error conectando","err");}
+    setLoading(false);
+  };
+
+  const initForm={clientId:"",date:today(),startTime:"",endTime:"",serviceType:SVC[0],notes:"",extras:[]};
+  const [form,setForm]=useState(initForm);
+  const [extraDesc,setExtraDesc]=useState("");
+  const [extraAmt,setExtraAmt]=useState("");
+  const [editId,setEditId]=useState(null);
+
+  const hours=calcHours(form.startTime,form.endTime);
+  const client=clients.find(c=>c.id===form.clientId);
+  const baseAmt=client?Math.round(hours*client.rate*100)/100:0;
+  const extrasTotal=form.extras.reduce((s,x)=>s+x.amount,0);
+  const totalAmt=Math.round((baseAmt+extrasTotal)*100)/100;
+
+  const addExtra=()=>{if(!extraDesc.trim()||!extraAmt)return;setForm(f=>({...f,extras:[...f.extras,{id:uid(),desc:extraDesc.trim(),amount:parseFloat(extraAmt)}]}));setExtraDesc("");setExtraAmt("");};
+  const removeExtra=id=>setForm(f=>({...f,extras:f.extras.filter(x=>x.id!==id)}));
+
+  const saveEntry=async()=>{
+    if(!form.clientId||!form.date||!form.startTime||!form.endTime){showToast("Completa todos los campos","err");return;}
+    if(hours<=0){showToast("Hora fin debe ser mayor que inicio","err");return;}
+    const entry={client_id:form.clientId,user_name:userName||"Royman",date:form.date,start_time:form.startTime,end_time:form.endTime,hours,service_type:form.serviceType,notes:form.notes,extras:form.extras,base_amount:baseAmt,extras_amount:extrasTotal,total_amount:totalAmt,currency:client?.currency||"AUD"};
+    try {
+      if(editId){await sb.from("entries").update(entry).eq("id",editId);setEntries(entries.map(e=>e.id===editId?{...e,...entry,id:editId}:e));showToast("Registro actualizado");setEditId(null);}
+      else{const{data}=await sb.from("entries").insert(entry).select().single();setEntries([data,...entries]);showToast("Registro guardado");}
+      setForm(initForm);
+    }catch(e){showToast("Error guardando","err");}
+  };
+
+  const editEntry=e=>{setForm({clientId:e.client_id,date:e.date,startTime:e.start_time,endTime:e.end_time,serviceType:e.service_type,notes:e.notes||"",extras:e.extras||[]});setEditId(e.id);setTab(0);window.scrollTo(0,0);};
+  const deleteEntry=async id=>{if(!confirm("Eliminar registro?"))return;await sb.from("entries").delete().eq("id",id);setEntries(entries.filter(e=>e.id!==id));showToast("Eliminado");};
+
+  const exportJSON=()=>{const data={clients,entries,archives};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="timetracker_backup.json";a.click();showToast("Backup exportado");};
+  const importJSON=async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);if(data.entries?.length){const mapped=data.entries.map(en=>({client_id:en.clientId||en.client_id,user_name:en.userName||en.user_name||"Royman",date:en.date,start_time:en.startTime||en.start_time,end_time:en.endTime||en.end_time,hours:en.hours,service_type:en.serviceType||en.service_type,notes:en.notes,extras:en.extras||[],base_amount:en.baseAmount||en.base_amount||0,extras_amount:en.extrasAmount||en.extras_amount||0,total_amount:en.totalAmount||en.total_amount||0,currency:en.currency||"AUD"}));await sb.from("entries").insert(mapped);showToast(`${mapped.length} registros importados`);loadData();}}catch(err){showToast("Error al importar","err");}};
+
+  const weeks=useMemo(()=>{const map={};entries.forEach(e=>{const k=weekKey(e.date);if(!map[k])map[k]=[];map[k].push(e);});return Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));},[ entries]);
+  const exportXLSX=(wEntries,label)=>{const rows=wEntries.map(e=>{const c=clients.find(x=>x.id===e.client_id);return{Fecha:fmtDate(e.date),Empleado:e.user_name,Cliente:c?.name||"?",Direccion:c?.address||"",Tipo:e.service_type,Inicio:fmtTime(e.start_time),Fin:fmtTime(e.end_time),Horas:e.hours,Tarifa:c?.rate||0,Moneda:e.currency||"AUD",Base:e.base_amount,Extras:e.extras_amount||0,Total:e.total_amount};});const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Servicios");XLSX.writeFile(wb,`TimeTrack_${label.replace(/[^a-zA-Z0-9]/g,"_")}.xlsx`);};
+
+  const [cForm,setCForm]=useState({name:"",address:"",type:"Residencial",rate:35,currency:"AUD",notes:""});
+  const [cEdit,setCEdit]=useState(null);
+  const saveClient=async()=>{if(!cForm.name.trim()){showToast("Nombre requerido","err");return;}const data={...cForm,rate:parseFloat(cForm.rate)};try{if(cEdit){await sb.from("clients").update(data).eq("id",cEdit);setClients(clients.map(c=>c.id===cEdit?{...c,...data}:c));setCEdit(null);showToast("Cliente actualizado");}else{const{data:ins}=await sb.from("clients").insert(data).select().single();setClients([...clients,ins]);showToast("Cliente agregado");}setCForm({name:"",address:"",type:"Residencial",rate:35,currency:"AUD",notes:""});}catch(e){showToast("Error","err");}};
+  const editClient=c=>{setCForm({name:c.name,address:c.address||"",type:c.type,rate:c.rate,currency:c.currency||"AUD",notes:c.notes||""});setCEdit(c.id);setTab(1);};
+  const deleteClient=async id=>{if(!confirm("Eliminar cliente?"))return;await sb.from("clients").delete().eq("id",id);setClients(clients.filter(c=>c.id!==id));showToast("Cliente eliminado");};
+
+  const s={
+    app:{minHeight:"100vh",background:C.bg,color:C.text,paddingBottom:80},
+    header:{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"14px 16px",display:"flex",alignItems:"center",gap:10},
+    tabBar:{position:"fixed",bottom:0,left:0,right:0,background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",zIndex:100},
+    tabBtn:a=>({flex:1,padding:"12px 4px",background:"none",border:"none",color:a?C.accentBright:C.textMuted,fontSize:11,fontFamily:"inherit",fontWeight:a?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3}),
+    card:{background:C.card,borderRadius:12,padding:16,marginBottom:12,border:`1px solid ${C.border}`},
+    lbl:{fontSize:12,color:C.textMuted,marginBottom:4,display:"block",fontWeight:500},
+    inp:{width:"100%",padding:"10px 12px",background:C.inputBg,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:14,fontFamily:"inherit"},
+    sel:{width:"100%",padding:"10px 12px",background:C.inputBg,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:14,fontFamily:"inherit"},
+    btn:{background:C.accentBright,color:"#fff",border:"none",borderRadius:10,padding:"12px 20px",fontFamily:"inherit",fontWeight:700,fontSize:14,cursor:"pointer",width:"100%"},
+    btnS:{background:C.inputBg,color:C.textMuted,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 16px",fontFamily:"inherit",fontWeight:600,fontSize:13,cursor:"pointer"},
+    toast:t=>({position:"fixed",top:16,right:16,left:16,background:t==="err"?"#2a1010":"#0a2a10",border:`1px solid ${t==="err"?"#6b2020":"#206b20"}`,borderRadius:10,padding:"12px 16px",color:t==="err"?"#ff8080":"#80ff80",fontSize:14,fontWeight:500,zIndex:999}),
+    row:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},
+    sec:{padding:"0 16px"},
+    modal:{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:20},
+    mCard:{background:C.card,borderRadius:16,padding:24,width:"100%",maxWidth:340,border:`1px solid ${C.border}`},
+  };
+
+  if(loading) return <div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}><div style={{fontSize:48}}>🧹</div><div style={{color:C.textMuted}}>Cargando...</div></div>;
+
+  return (
+    <div style={s.app}>
+      {toast&&<div style={s.toast(toast.type)}>{toast.msg}</div>}
+      {showModal&&<div style={s.modal}><div style={s.mCard}>
+        <div style={{fontSize:28,textAlign:"center",marginBottom:8}}>🧹</div>
+        <div style={{fontWeight:700,fontSize:16,textAlign:"center",marginBottom:4}}>Bienvenido</div>
+        <div style={{fontSize:13,color:C.textMuted,textAlign:"center",marginBottom:16}}>Como te llamas?</div>
+        <input style={{...s.inp,marginBottom:14}} placeholder="Tu nombre" value={tempName} onChange={e=>setTempName(e.target.value)}/>
+        <button style={s.btn} onClick={()=>{if(!tempName.trim())return;localStorage.setItem("ssc_username",tempName.trim());setUserName(tempName.trim());setShowModal(false);}}>Entrar</button>
+      </div></div>}
+
+      <div style={s.header}>
+        <span style={{fontSize:22}}>🧹</span>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,fontSize:16}}>SS Time Tracker</div>
+          <div style={{fontSize:11,color:C.textMuted}}>Super Cleaning Services</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <span style={{fontSize:12,color:C.textMuted}}>{userName}</span>
+          <button onClick={()=>{setTempName(userName);setShowModal(true);}} style={{...s.btnS,padding:"4px 10px",fontSize:11}}>✏️</button>
+        </div>
+      </div>
+
+      {tab===0&&<div style={{...s.sec,paddingTop:16}}>
+        <div style={{display:"flex",gap:8,marginBottom:12}}>
+          <button onClick={exportJSON} style={{...s.btnS,flex:1,fontSize:12,padding:"8px"}}>📦 Exportar JSON</button>
+          <label style={{...s.btnS,flex:1,fontSize:12,padding:"8px",textAlign:"center",cursor:"pointer"}}>📥 Importar JSON<input type="file" accept=".json" onChange={importJSON} style={{display:"none"}}/></label>
+        </div>
+        <div style={s.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>{editId?"✏️ Editar":"➕ Nuevo registro"}</div>
+          <label style={s.lbl}>Cliente</label>
+          <select style={{...s.sel,marginBottom:12}} value={form.clientId} onChange={e=>setForm(f=>({...f,clientId:e.target.value}))}>
+            <option value="">Seleccionar cliente...</option>
+            {[...clients].sort((a,b)=>a.name.localeCompare(b.name)).map(c=><option key={c.id} value={c.id}>{c.name} — ${c.rate}/h</option>)}
+          </select>
+          {client?.notes&&<div style={{background:"#1a0a0e",border:`1px solid ${C.accentBright}`,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:12}}>📋 <b>Notas:</b> {client.notes}</div>}
+          <label style={s.lbl}>Fecha</label>
+          <input style={{...s.inp,marginBottom:12}} type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/>
+          <div style={{...s.row,marginBottom:12}}>
+            <div><label style={s.lbl}>Inicio</label><input style={s.inp} type="time" value={form.startTime} onChange={e=>setForm(f=>({...f,startTime:e.target.value}))}/></div>
+            <div><label style={s.lbl}>Fin</label><input style={s.inp} type="time" value={form.endTime} onChange={e=>setForm(f=>({...f,endTime:e.target.value}))}/></div>
+          </div>
+          {hours>0&&<div style={{background:C.inputBg,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:13}}>⏱ <b>{hours}h</b> · Base: <b>${baseAmt} {client?.currency||"AUD"}</b></div>}
+          <label style={s.lbl}>Tipo de servicio</label>
+          <select style={{...s.sel,marginBottom:12}} value={form.serviceType} onChange={e=>setForm(f=>({...f,serviceType:e.target.value}))}>{SVC.map(t=><option key={t}>{t}</option>)}</select>
+          <label style={s.lbl}>Notas</label>
+          <input style={{...s.inp,marginBottom:14}} placeholder="Observaciones..." value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))}/>
+          <div style={{fontSize:13,fontWeight:600,color:C.textMuted,marginBottom:8}}>Cargos adicionales</div>
+          {form.extras.map(x=><div key={x.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:C.inputBg,borderRadius:8,padding:"8px 10px",marginBottom:6,fontSize:13}}><span>{x.desc}</span><span style={{color:C.green}}>${x.amount} <button onClick={()=>removeExtra(x.id)} style={{background:"none",border:"none",color:"#ff6060",cursor:"pointer"}}>✕</button></span></div>)}
+          <div style={{display:"flex",gap:8,marginBottom:14}}>
+            <input style={{...s.inp,flex:2}} placeholder="Descripcion" value={extraDesc} onChange={e=>setExtraDesc(e.target.value)}/>
+            <input style={{...s.inp,flex:1}} placeholder="$" type="number" value={extraAmt} onChange={e=>setExtraAmt(e.target.value)}/>
+            <button onClick={addExtra} style={{...s.btnS,padding:"10px 14px"}}>+</button>
+          </div>
+          {form.extras.length>0&&<div style={{background:C.inputBg,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:13}}>💰 Total: <b>${totalAmt} {client?.currency||"AUD"}</b></div>}
+          <button style={s.btn} onClick={saveEntry}>{editId?"💾 Actualizar":"✅ Guardar registro"}</button>
+          {editId&&<button style={{...s.btnS,width:"100%",marginTop:8}} onClick={()=>{setEditId(null);setForm(initForm);}}>Cancelar</button>}
+        </div>
+        {entries.length>0&&<div style={s.card}>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:12,color:C.textMuted}}>Registros ({entries.length})</div>
+          {entries.slice(0,20).map(e=>{const c=clients.find(x=>x.id===e.client_id);return(
+            <div key={e.id} style={{borderBottom:`1px solid ${C.border}`,paddingBottom:10,marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div><div style={{fontWeight:600,fontSize:14}}>{c?.name||"?"}</div><div style={{fontSize:12,color:C.textMuted}}>{fmtDate(e.date)} · {fmtTime(e.start_time)}–{fmtTime(e.end_time)} · {e.hours}h</div></div>
+                <div style={{textAlign:"right"}}><div style={{fontWeight:700,color:C.green}}>${e.total_amount}</div><div style={{display:"flex",gap:6,marginTop:4}}><button onClick={()=>editEntry(e)} style={{...s.btnS,padding:"4px 10px",fontSize:12}}>✏️</button><button onClick={()=>deleteEntry(e.id)} style={{...s.btnS,padding:"4px 10px",fontSize:12,color:"#ff6060"}}>🗑️</button></div></div>
+              </div>
+            </div>
+          );})}
+        </div>}
+      </div>}
+
+      {tab===1&&<div style={{...s.sec,paddingTop:16}}>
+        <div style={s.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>{cEdit?"✏️ Editar":"➕ Nuevo cliente"}</div>
+          <label style={s.lbl}>Nombre</label><input style={{...s.inp,marginBottom:10}} value={cForm.name} onChange={e=>setCForm(f=>({...f,name:e.target.value}))} placeholder="Nombre"/>
+          <label style={s.lbl}>Direccion</label><input style={{...s.inp,marginBottom:10}} value={cForm.address} onChange={e=>setCForm(f=>({...f,address:e.target.value}))} placeholder="Direccion"/>
+          <label style={s.lbl}>Notas del servicio</label><input style={{...s.inp,marginBottom:10}} value={cForm.notes} onChange={e=>setCForm(f=>({...f,notes:e.target.value}))} placeholder="Ej: Tiene perro, 3 habitaciones..."/>
+          <div style={{...s.row,marginBottom:10}}>
+            <div><label style={s.lbl}>Tipo</label><select style={s.sel} value={cForm.type} onChange={e=>setCForm(f=>({...f,type:e.target.value}))}><option>Residencial</option><option>Comercial</option></select></div>
+            <div><label style={s.lbl}>Moneda</label><select style={s.sel} value={cForm.currency} onChange={e=>setCForm(f=>({...f,currency:e.target.value}))}><option>AUD</option><option>USD</option><option>MXN</option></select></div>
+          </div>
+          <label style={s.lbl}>Tarifa/hora</label><input style={{...s.inp,marginBottom:14}} type="number" value={cForm.rate} onChange={e=>setCForm(f=>({...f,rate:e.target.value}))}/>
+          <button style={s.btn} onClick={saveClient}>{cEdit?"💾 Actualizar":"✅ Agregar"}</button>
+          {cEdit&&<button style={{...s.btnS,width:"100%",marginTop:8}} onClick={()=>{setCEdit(null);setCForm({name:"",address:"",type:"Residencial",rate:35,currency:"AUD",notes:""});}}>Cancelar</button>}
+        </div>
+        {[...clients].sort((a,b)=>a.name.localeCompare(b.name)).map(c=>(
+          <div key={c.id} style={s.card}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>{c.name}</div><div style={{fontSize:12,color:C.textMuted,marginTop:2}}>{c.address}</div>{c.notes&&<div style={{fontSize:11,color:C.accentBright,marginTop:4}}>📋 {c.notes}</div>}<div style={{marginTop:4,fontSize:11,color:C.textMuted}}>{c.type} · {c.currency||"AUD"} ${c.rate}/h</div></div>
+              <div style={{display:"flex",gap:6}}><button onClick={()=>editClient(c)} style={{...s.btnS,padding:"6px 12px"}}>✏️</button><button onClick={()=>deleteClient(c.id)} style={{...s.btnS,padding:"6px 12px",color:"#ff6060"}}>🗑️</button></div>
+            </div>
+          </div>
+        ))}
+      </div>}
+
+      {tab===2&&<div style={{...s.sec,paddingTop:16}}>
+        {weeks.length===0&&<div style={{textAlign:"center",padding:40,color:C.textMuted}}>No hay registros aun</div>}
+        {weeks.map(([key,wEntries])=>{
+          const totals={};wEntries.forEach(e=>{const cur=e.currency||"AUD";totals[cur]=(totals[cur]||0)+e.total_amount;});
+          return(<div key={key} style={s.card}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{fontWeight:700,fontSize:14}}>{weekLabel(key)}</div><button onClick={()=>exportXLSX(wEntries,weekLabel(key))} style={{...s.btnS,padding:"6px 12px",fontSize:12}}>📊 Excel</button></div>
+            {wEntries.sort((a,b)=>b.date.localeCompare(a.date)).map(e=>{const c=clients.find(x=>x.id===e.client_id);return(<div key={e.id} style={{borderBottom:`1px solid ${C.border}`,paddingBottom:8,marginBottom:8,fontSize:13}}><div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{c?.name||"?"}</span><span style={{color:C.green,fontWeight:700}}>${e.total_amount}</span></div><div style={{color:C.textMuted}}>{fmtDate(e.date)} · {e.hours}h</div></div>);})}
+            <div style={{borderTop:`1px solid ${C.border}`,paddingTop:8}}>{Object.entries(totals).map(([cur,tot])=><div key={cur} style={{display:"flex",justifyContent:"space-between",fontWeight:700,fontSize:15}}><span>Total {cur}</span><span style={{color:C.accentBright}}>${Math.round(tot*100)/100}</span></div>)}</div>
+          </div>);
+        })}
+      </div>}
+
+      {tab===3&&<div style={{...s.sec,paddingTop:16}}>
+        {archives.length===0&&<div style={{textAlign:"center",padding:40,color:C.textMuted}}>No hay semanas archivadas</div>}
+        {archives.map(arc=>{
+          const ents=arc.entries||[];const totals={};ents.forEach(e=>{const cur=e.currency||"AUD";totals[cur]=(totals[cur]||0)+(e.total_amount||0);});
+          return(<div key={arc.id} style={s.card}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><div style={{fontWeight:700,fontSize:14}}>{arc.label}</div><button onClick={()=>exportXLSX(ents,arc.label)} style={{...s.btnS,padding:"6px 12px",fontSize:12}}>📊 Excel</button></div>
+            {ents.map((e,i)=>{const c=clients.find(x=>x.id===e.client_id);return(<div key={i} style={{borderBottom:`1px solid ${C.border}`,paddingBottom:8,marginBottom:8,fontSize:13}}><div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{c?.name||"?"}</span><span style={{color:C.green,fontWeight:700}}>${e.total_amount}</span></div><div style={{color:C.textMuted}}>{fmtDate(e.date)} · {e.hours}h</div></div>);})}
+            <div style={{borderTop:`1px solid ${C.border}`,paddingTop:8}}>{Object.entries(totals).map(([cur,tot])=><div key={cur} style={{display:"flex",justifyContent:"space-between",fontWeight:700,fontSize:15}}><span>Total {cur}</span><span style={{color:C.accentBright}}>${Math.round(tot*100)/100}</span></div>)}</div>
+          </div>);
+        })}
+      </div>}
+
+      <div style={s.tabBar}>
+        {TABS.map((t,i)=><button key={t} style={s.tabBtn(tab===i)} onClick={()=>setTab(i)}><span style={{fontSize:18}}>{ICONS[i]}</span><span>{t}</span></button>)}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
 </html>
