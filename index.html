@@ -1,95 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#c42040"/>
-  <title>SS Time Tracker</title>
-  <link rel="manifest" href="manifest.json"/>
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
-  <link rel="apple-touch-icon" href="icon-192.png"/>
-  <meta name="mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="SS Tracker"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #1a0a0e; color: #f5ede8; font-family: 'DM Sans', system-ui, sans-serif; }
-    select option { background: #200c14; color: #f5ede8; }
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-    .pulse { animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes blink { 0%,100%{background:#c42040} 50%{background:#8a1530} }
-    .blink-bg { animation: blink 1s ease-in-out infinite; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#c42040"/>
+<title>SS Time Tracker</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="SS Tracker"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a0a0e; color: #f5ede8; font-family: 'DM Sans', system-ui, sans-serif; }
+select option { background: #200c14; color: #f5ede8; }
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.pulse { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{background:#c42040} 50%{background:#8a1530} }
+.blink-bg { animation: blink 1s ease-in-out infinite; }
+</style>
 </head>
 <body>
 <div id="root"></div>
-
-<!-- Registro del Service Worker para PWA -->
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('SW registrado:', reg.scope))
-        .catch(err => console.log('SW error:', err));
-    });
-  }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
 </script>
-
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 const { createClient } = supabase;
-
 const sb = createClient(
   'https://flayrgbxeyumyefstezi.supabase.co',
   'sb_publishable_3EWLFqxyZoRnevbczZ7Fhg_PUUu8mYw'
 );
 
 const SS_CLIENTS_DEFAULT = [
-  {id:"c1",name:"SunEnergy",address:"88 Fullarton Rd, Norwood SA 5067",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:1},
-  {id:"c2",name:"Jemma",address:"31 Queen St, Norwood SA 5067",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c3",name:"Andrew",address:"4 Fuller Ct, Walkerville SA 5081",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c4",name:"Robert",address:"41 Observation Dr, Highbury SA 5089",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:3},
-  {id:"c5",name:"Lee",address:"1A Chasewater Street, Lower Mitcham SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c6",name:"Helen UC",address:"U City, 10 Pirie St, Adelaide SA 5000",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c7",name:"Helen Xydias",address:"118 Cambridge Terrace, SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c8",name:"Olivia",address:"28A Fifth Ave, Cheltenham SA 5014",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c9",name:"Pip",address:"30 Augusta Street, Maylans SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c10",name:"Al",address:"8 Yeltana Ave, Wattle Park SA 5066",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c11",name:"Rebecca",address:"18 Clifton St, Camden Park SA 5038",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c12",name:"Desley",address:"11 Wilkinson Ave, Somerton Park SA 5044",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c13",name:"Ella Billich",address:"16 Gladys St, Clarence Gardens SA 5039",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c14",name:"Glow DC",address:"352 Morphett Rd, Warradale SA 5046",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c15",name:"Chloe",address:"16 Wentworth St, Lockleys SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c16",name:"Michelle",address:"35 Harding St, SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c17",name:"Jodie",address:"13A Verdun St, Beulah Park SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c18",name:"Barbara",address:"27 Daws Rd, Mitchell Park SA 5043",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c19",name:"Sam",address:"1 Farrell St, Glenelg SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c20",name:"Stacy",address:"5 Dudley Ave, SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c21",name:"Amber",address:"7 Tarlton St, Somerton Park SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c22",name:"Aboutface",address:"74 Gawler St, Mount Barker SA 5251",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:3},
-  {id:"c23",name:"Helen & Craig",address:"17 McLaren Street, Adelaide SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c24",name:"Jenny",address:"70 Carlisle Road, Westbourne Park SA",type:"Residencial",rate:30,currency:"AUD",duracion_estimada_horas:2},
-  {id:"c25",name:"Alli",address:"123 Morgan Ave, Melrose Park SA",type:"Residencial",rate:30,currency:"AUD",duracion_estimada_horas:2},
+{id:"c1",name:"SunEnergy",address:"88 Fullarton Rd, Norwood SA 5067",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:1},
+{id:"c2",name:"Jemma",address:"31 Queen St, Norwood SA 5067",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c3",name:"Andrew",address:"4 Fuller Ct, Walkerville SA 5081",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c4",name:"Robert",address:"41 Observation Dr, Highbury SA 5089",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:3},
+{id:"c5",name:"Lee",address:"1A Chasewater Street, Lower Mitcham SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c6",name:"Helen UC",address:"U City, 10 Pirie St, Adelaide SA 5000",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c7",name:"Helen Xydias",address:"118 Cambridge Terrace, SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c8",name:"Olivia",address:"28A Fifth Ave, Cheltenham SA 5014",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c9",name:"Pip",address:"30 Augusta Street, Maylans SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c10",name:"Al",address:"8 Yeltana Ave, Wattle Park SA 5066",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c11",name:"Rebecca",address:"18 Clifton St, Camden Park SA 5038",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c12",name:"Desley",address:"11 Wilkinson Ave, Somerton Park SA 5044",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c13",name:"Ella Billich",address:"16 Gladys St, Clarence Gardens SA 5039",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c14",name:"Glow DC",address:"352 Morphett Rd, Warradale SA 5046",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c15",name:"Chloe",address:"16 Wentworth St, Lockleys SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c16",name:"Michelle",address:"35 Harding St, SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c17",name:"Jodie",address:"13A Verdun St, Beulah Park SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c18",name:"Barbara",address:"27 Daws Rd, Mitchell Park SA 5043",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c19",name:"Sam",address:"1 Farrell St, Glenelg SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c20",name:"Stacy",address:"5 Dudley Ave, SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c21",name:"Amber",address:"7 Tarlton St, Somerton Park SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c22",name:"Aboutface",address:"74 Gawler St, Mount Barker SA 5251",type:"Comercial",rate:35,currency:"AUD",duracion_estimada_horas:3},
+{id:"c23",name:"Helen & Craig",address:"17 McLaren Street, Adelaide SA",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2},
+{id:"c24",name:"Jenny",address:"70 Carlisle Road, Westbourne Park SA",type:"Residencial",rate:30,currency:"AUD",duracion_estimada_horas:2},
+{id:"c25",name:"Alli",address:"123 Morgan Ave, Melrose Park SA",type:"Residencial",rate:30,currency:"AUD",duracion_estimada_horas:2},
 ];
 
 const HISTORICAL_ARCHIVES = [];
+
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
-const fmtDate = d => { if(!d) return ""; const [y,m,dd]=d.split("-"); return `${dd}/${m}/${y}`; };
+
+// FIX: fmtDate ahora detecta ambos formatos (ISO 2025-09-09 y DD/MM/YYYY 09/09/2025)
+const fmtDate = d => {
+  if(!d) return "";
+  // Si ya viene en formato DD/MM/YYYY, devolverlo tal cual
+  if (d.includes("/")) return d;
+  // Si viene en formato ISO YYYY-MM-DD, convertir
+  if (d.includes("-")) {
+    const [y,m,dd] = d.split("-");
+    return `${dd}/${m}/${y}`;
+  }
+  return d;
+};
+
 const fmtTime = t => { if(!t) return ""; const [h,m]=t.split(":"); const hh=parseInt(h); return `${hh>12?hh-12:hh||12}:${m} ${hh>=12?"PM":"AM"}`; };
 const calcHours = (s,e) => { if(!s||!e) return 0; const [sh,sm]=s.split(":").map(Number); const [eh,em]=e.split(":").map(Number); const d=(eh*60+em)-(sh*60+sm); return d>0?Math.round(d/60*100)/100:0; };
 const weekKey = d => { const dt=new Date(d+"T12:00:00"); const day=dt.getDay(); const mon=new Date(dt); mon.setDate(dt.getDate()-(day===0?6:day-1)); return mon.toISOString().slice(0,10); };
 const weekLabel = k => { const s=new Date(k+"T12:00:00"),e=new Date(s); e.setDate(s.getDate()+6); return `${s.getDate()} ${s.toLocaleString("es",{month:"short"})} - ${e.getDate()} ${e.toLocaleString("es",{month:"short",year:"numeric"})}`; };
 
-// Convierte timestamp ISO a HH:MM (hora local)
 const isoToTime = iso => {
   if (!iso) return "";
   const d = new Date(iso);
@@ -98,9 +107,11 @@ const isoToTime = iso => {
   return `${h}:${m}`;
 };
 
-// Renderiza fecha + horas, sin mostrar undefined si faltan start_time/end_time
+// FIX: Ahora también verifica que start_time/end_time sean válidos (no null, no undefined string)
 const fmtDateEntry = (e) => {
-  const hasTime = e.start_time && e.end_time && e.start_time !== "undefined" && e.end_time !== "undefined";
+  const hasTime = e.start_time && e.end_time && 
+                  e.start_time !== "undefined" && e.end_time !== "undefined" &&
+                  e.start_time !== null && e.end_time !== null;
   if (hasTime) {
     return `${fmtDate(e.date)} · ${fmtTime(e.start_time)}–${fmtTime(e.end_time)} · ${e.hours}h`;
   } else {
@@ -108,7 +119,6 @@ const fmtDateEntry = (e) => {
   }
 };
 
-// Formatea segundos a HH:MM:SS
 const fmtElapsed = secs => {
   const h = Math.floor(secs/3600);
   const m = Math.floor((secs%3600)/60);
@@ -131,28 +141,24 @@ function App() {
   const [userName,setUserName]=useState(()=>localStorage.getItem("ssc_username")||"");
   const [showModal,setShowModal]=useState(false);
   const [tempName,setTempName]=useState("");
-  
-  // ==== ESTADO DEL CRONÓMETRO ====
-  // runningTimer guarda el servicio en curso. Persiste en localStorage.
+
   const [runningTimer, setRunningTimer] = useState(() => {
     try {
       const saved = localStorage.getItem("ssc_running_timer");
       return saved ? JSON.parse(saved) : null;
     } catch { return null; }
   });
-  const [tickNow, setTickNow] = useState(Date.now()); // fuerza re-render cada segundo
+  const [tickNow, setTickNow] = useState(Date.now());
   const [timerClientId, setTimerClientId] = useState("");
   const [timerNotes, setTimerNotes] = useState("");
-  const [registerMode, setRegisterMode] = useState("timer"); // "timer" o "manual"
-  
-  // Tick del cronómetro: actualiza cada segundo si hay timer corriendo
+  const [registerMode, setRegisterMode] = useState("timer");
+
   useEffect(() => {
     if (!runningTimer) return;
     const intervalId = setInterval(() => setTickNow(Date.now()), 1000);
     return () => clearInterval(intervalId);
   }, [runningTimer]);
-  
-  // Guardar runningTimer en localStorage cuando cambie
+
   useEffect(() => {
     if (runningTimer) {
       localStorage.setItem("ssc_running_timer", JSON.stringify(runningTimer));
@@ -187,7 +193,6 @@ function App() {
   const [extraDesc,setExtraDesc]=useState("");
   const [extraAmt,setExtraAmt]=useState("");
   const [editId,setEditId]=useState(null);
-
   const hours=calcHours(form.startTime,form.endTime);
   const client=clients.find(c=>c.id===form.clientId);
   const baseAmt=client?Math.round(hours*client.rate*100)/100:0;
@@ -197,8 +202,6 @@ function App() {
   const addExtra=()=>{if(!extraDesc.trim()||!extraAmt)return;setForm(f=>({...f,extras:[...f.extras,{id:uid(),desc:extraDesc.trim(),amount:parseFloat(extraAmt)}]}));setExtraDesc("");setExtraAmt("");};
   const removeExtra=id=>setForm(f=>({...f,extras:f.extras.filter(x=>x.id!==id)}));
 
-  // ==== FUNCIONES DEL CRONÓMETRO ====
-  
   const startTimer = () => {
     if (!timerClientId) {
       showToast("Selecciona un cliente primero", "err");
@@ -221,19 +224,16 @@ function App() {
     setTimerNotes("");
     showToast(`▶️ Servicio iniciado para ${cli?.name}`);
   };
-  
+
   const stopTimer = async () => {
     if (!runningTimer) return;
     if (!confirm(`¿Finalizar el servicio de ${runningTimer.clientName}?`)) return;
-    
     const checkInAt = new Date(runningTimer.checkInAt);
     const checkOutAt = new Date();
     const elapsedMs = checkOutAt - checkInAt;
     const realHours = Math.round((elapsedMs / 1000 / 3600) * 100) / 100;
-    
     const cli = clients.find(c => c.id === runningTimer.clientId);
     const baseAmount = cli ? Math.round(realHours * cli.rate * 100) / 100 : 0;
-    
     const entry = {
       client_id: runningTimer.clientId,
       user_name: userName || "Royman",
@@ -254,7 +254,6 @@ function App() {
       edited_by_user: false,
       original_hours: realHours
     };
-    
     try {
       const { data } = await sb.from("entries").insert(entry).select().single();
       setEntries([data, ...entries]);
@@ -265,7 +264,7 @@ function App() {
       console.error(e);
     }
   };
-  
+
   const cancelTimer = () => {
     if (!confirm("¿Cancelar el servicio en curso? No se guardará nada.")) return;
     setRunningTimer(null);
@@ -275,17 +274,13 @@ function App() {
   const saveEntry=async()=>{
     if(!form.clientId||!form.date||!form.startTime||!form.endTime){showToast("Completa todos los campos","err");return;}
     if(hours<=0){showToast("Hora fin debe ser mayor que inicio","err");return;}
-    
     const isEdit = !!editId;
     const originalEntry = isEdit ? entries.find(e => e.id === editId) : null;
-    
-    // Detecta si las horas/tiempos cambiaron respecto al original
     const horasFueronEditadas = isEdit && originalEntry && (
       originalEntry.start_time !== form.startTime ||
       originalEntry.end_time !== form.endTime ||
       Math.abs((originalEntry.hours || 0) - hours) > 0.01
     );
-    
     const entry={
       client_id:form.clientId,
       user_name:userName||"Royman",
@@ -301,17 +296,14 @@ function App() {
       total_amount:totalAmt,
       currency:client?.currency||"AUD"
     };
-    
     if (horasFueronEditadas) {
       entry.edited_by_user = true;
       entry.edited_at = new Date().toISOString();
-      // original_hours: si ya tenía uno guardado, lo mantenemos; si no, usamos las horas que tenía antes
       entry.original_hours = originalEntry.original_hours || originalEntry.hours;
     } else if (!isEdit) {
       entry.edited_by_user = false;
       entry.original_hours = hours;
     }
-    
     try {
       if(editId){
         await sb.from("entries").update(entry).eq("id",editId);
@@ -334,6 +326,7 @@ function App() {
   const importJSON=async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);if(data.entries?.length){const mapped=data.entries.map(en=>({client_id:en.clientId||en.client_id,user_name:en.userName||en.user_name||"Royman",date:en.date,start_time:en.startTime||en.start_time,end_time:en.endTime||en.end_time,hours:en.hours,service_type:en.serviceType||en.service_type,notes:en.notes,extras:en.extras||[],base_amount:en.baseAmount||en.base_amount||0,extras_amount:en.extrasAmount||en.extras_amount||0,total_amount:en.totalAmount||en.total_amount||0,currency:en.currency||"AUD"}));await sb.from("entries").insert(mapped);showToast(`${mapped.length} registros importados`);loadData();}}catch(err){showToast("Error al importar","err");}};
 
   const weeks=useMemo(()=>{const map={};entries.forEach(e=>{const k=weekKey(e.date);if(!map[k])map[k]=[];map[k].push(e);});return Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));},[entries]);
+
   const exportXLSX=(wEntries,label)=>{const rows=wEntries.map(e=>{const c=clients.find(x=>x.id===e.client_id);return{Fecha:fmtDate(e.date),Empleado:e.user_name,Cliente:c?.name||"?",Direccion:c?.address||"",Tipo:e.service_type,Inicio:fmtTime(e.start_time),Fin:fmtTime(e.end_time),Horas:e.hours,Editado:e.edited_by_user?"SI":"NO",HorasOriginal:e.original_hours||e.hours,Tarifa:c?.rate||0,Moneda:e.currency||"AUD",Base:e.base_amount,Extras:e.extras_amount||0,Total:e.total_amount};});const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Servicios");XLSX.writeFile(wb,`TimeTrack_${label.replace(/[^a-zA-Z0-9]/g,"_")}.xlsx`);};
 
   const [cForm,setCForm]=useState({name:"",address:"",type:"Residencial",rate:35,currency:"AUD",notes:"",duracion_estimada_horas:1});
@@ -362,7 +355,6 @@ function App() {
   const editClient=c=>{setCForm({name:c.name,address:c.address||"",type:c.type,rate:c.rate,currency:c.currency||"AUD",notes:c.notes||"",duracion_estimada_horas:c.duracion_estimada_horas||1});setCEdit(c.id);setTab(1);};
   const deleteClient=async id=>{if(!confirm("Eliminar cliente?"))return;await sb.from("clients").delete().eq("id",id);setClients(clients.filter(c=>c.id!==id));showToast("Cliente eliminado");};
 
-  // Cálculos del cronómetro en vivo
   const timerClient = runningTimer ? clients.find(c => c.id === runningTimer.clientId) : null;
   const elapsedSecs = runningTimer ? Math.floor((tickNow - new Date(runningTimer.checkInAt).getTime()) / 1000) : 0;
   const targetSecs = runningTimer ? (runningTimer.duracionEstimadaHoras || 1) * 3600 : 0;
@@ -416,7 +408,6 @@ function App() {
         </div>
       </div>
 
-      {/* ===== BANNER DE CRONÓMETRO EN CURSO (siempre visible si hay timer) ===== */}
       {runningTimer && tab !== 0 && (
         <div style={{...s.sec,paddingTop:12}}>
           <div onClick={()=>setTab(0)} style={{background:isOvertime?C.warning:C.accentBright,borderRadius:12,padding:"12px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}} className="pulse">
@@ -431,8 +422,6 @@ function App() {
       )}
 
       {tab===0&&<div style={{...s.sec,paddingTop:16}}>
-        
-        {/* ===== SECCIÓN CRONÓMETRO EN VIVO (cuando hay timer activo) ===== */}
         {runningTimer && (
           <div style={{...s.card,border:`2px solid ${isOvertime?C.warning:C.accentBright}`}}>
             <div style={{textAlign:"center",marginBottom:12}}>
@@ -440,7 +429,6 @@ function App() {
               <div style={{fontSize:18,fontWeight:700,color:C.accentBright,marginTop:4}}>{runningTimer.clientName}</div>
               {timerClient?.address && <div style={{fontSize:12,color:C.textMuted,marginTop:2}}>{timerClient.address}</div>}
             </div>
-            
             <div style={{textAlign:"center",padding:"20px 0",background:C.inputBg,borderRadius:12,marginBottom:14}}>
               <div className={isOvertime?"":"pulse"} style={{fontSize:42,fontWeight:800,fontFamily:"monospace",color:isOvertime?C.warning:C.text,letterSpacing:2}}>
                 {fmtElapsed(elapsedSecs)}
@@ -453,41 +441,35 @@ function App() {
                 )}
               </div>
             </div>
-            
             {timerClient && (
               <div style={{background:C.inputBg,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:13}}>
                 💵 Tarifa: <b>${timerClient.rate}/h {timerClient.currency}</b> · Inicio: <b>{isoToTime(runningTimer.checkInAt)}</b>
               </div>
             )}
-            
             {timerClient?.notes && (
               <div style={{background:"#1a0a0e",border:`1px solid ${C.accentBright}`,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:12}}>
                 📋 <b>Notas del cliente:</b> {timerClient.notes}
               </div>
             )}
-            
             <button onClick={stopTimer} style={s.btnStop}>🏁 Finalizar servicio</button>
             <button onClick={cancelTimer} style={{...s.btnS,width:"100%",marginTop:8,color:"#ff6060"}}>✕ Cancelar (sin guardar)</button>
           </div>
         )}
-        
-        {/* ===== SI NO HAY TIMER ACTIVO: mostrar inicio o registro manual ===== */}
+
         {!runningTimer && (
           <>
             <div style={{display:"flex",gap:8,marginBottom:12}}>
               <button onClick={exportJSON} style={{...s.btnS,flex:1,fontSize:12,padding:"8px"}}>📦 Exportar JSON</button>
               <label style={{...s.btnS,flex:1,fontSize:12,padding:"8px",textAlign:"center",cursor:"pointer"}}>📥 Importar JSON<input type="file" accept=".json" onChange={importJSON} style={{display:"none"}}/></label>
             </div>
-            
-            {/* Toggle entre cronómetro y registro manual */}
+
             {!editId && (
               <div style={s.modeToggle}>
                 <button style={s.modeBtn(registerMode==="timer")} onClick={()=>setRegisterMode("timer")}>⏱️ Cronómetro</button>
                 <button style={s.modeBtn(registerMode==="manual")} onClick={()=>setRegisterMode("manual")}>✏️ Manual</button>
               </div>
             )}
-            
-            {/* MODO CRONÓMETRO: iniciar nuevo servicio */}
+
             {!editId && registerMode==="timer" && (
               <div style={s.card}>
                 <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>▶️ Iniciar servicio</div>
@@ -496,7 +478,6 @@ function App() {
                   <option value="">Seleccionar cliente...</option>
                   {[...clients].sort((a,b)=>a.name.localeCompare(b.name)).map(c=><option key={c.id} value={c.id}>{c.name} — ${c.rate}/h ({c.duracion_estimada_horas||1}h)</option>)}
                 </select>
-                
                 {timerClientId && (() => {
                   const sel = clients.find(c => c.id === timerClientId);
                   return sel?.notes ? (
@@ -505,28 +486,23 @@ function App() {
                     </div>
                   ) : null;
                 })()}
-                
                 <label style={s.lbl}>Notas iniciales (opcional)</label>
                 <input style={{...s.inp,marginBottom:14}} placeholder="Algo a tener en cuenta..." value={timerNotes} onChange={e=>setTimerNotes(e.target.value)}/>
-                
                 <button style={s.btnBig} onClick={startTimer}>▶️ Iniciar servicio</button>
                 <div style={{textAlign:"center",fontSize:11,color:C.textMuted,marginTop:8}}>
                   El cronómetro arrancará automáticamente
                 </div>
               </div>
             )}
-            
-            {/* MODO MANUAL o EDICIÓN: formulario tradicional */}
+
             {(registerMode==="manual" || editId) && (
               <div style={s.card}>
                 <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>{editId?"✏️ Editar registro":"✏️ Registro manual"}</div>
-                
                 {editId && entries.find(e=>e.id===editId)?.edited_by_user && (
                   <div style={{background:"#3a2010",border:`1px solid ${C.warning}`,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:12,color:C.warning}}>
                     ⚠️ Este registro ya fue editado anteriormente
                   </div>
                 )}
-                
                 <label style={s.lbl}>Cliente</label>
                 <select style={{...s.sel,marginBottom:12}} value={form.clientId} onChange={e=>setForm(f=>({...f,clientId:e.target.value}))}>
                   <option value="">Seleccionar cliente...</option>
@@ -558,8 +534,7 @@ function App() {
             )}
           </>
         )}
-        
-        {/* Lista de registros recientes */}
+
         {entries.length>0&&<div style={s.card}>
           <div style={{fontWeight:700,fontSize:14,marginBottom:12,color:C.textMuted}}>Registros ({entries.length})</div>
           {entries.slice(0,20).map(e=>{const c=clients.find(x=>x.id===e.client_id);return(
