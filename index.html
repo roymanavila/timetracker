@@ -83,7 +83,7 @@ const SS_CLIENTS_DEFAULT = [
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
 const fmtDate = d => { if(!d) return ""; const [y,m,dd]=d.split("-"); return `${dd}/${m}/${y}`; };
-const fmtTime = t => { if(!t) return ""; const [h,m]=t.split(":"); const hh=parseInt(h); return `${hh>12?hh-12:hh||12}:${m} ${hh>=12?"PM":"AM"}`; };
+const fmtTime = t => { if(!t || t === "undefined") return ""; const [h,m]=t.split(":"); const hh=parseInt(h); return `${hh>12?hh-12:hh||12}:${m} ${hh>=12?"PM":"AM"}`; };
 const calcHours = (s,e) => { if(!s||!e) return 0; const [sh,sm]=s.split(":").map(Number); const [eh,em]=e.split(":").map(Number); const d=(eh*60+em)-(sh*60+sm); return d>0?Math.round(d/60*100)/100:0; };
 const weekKey = d => { const dt=new Date(d+"T12:00:00"); const day=dt.getDay(); const mon=new Date(dt); mon.setDate(dt.getDate()-(day===0?6:day-1)); return mon.toISOString().slice(0,10); };
 const weekLabel = k => { const s=new Date(k+"T12:00:00"),e=new Date(s); e.setDate(s.getDate()+6); return `${s.getDate()} ${s.toLocaleString("es",{month:"short"})} - ${e.getDate()} ${e.toLocaleString("es",{month:"short",year:"numeric"})}`; };
