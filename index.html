@@ -99,7 +99,7 @@ const isoToTime = iso => {
 
 // Renderiza fecha + horas, sin mostrar undefined si faltan start_time/end_time
 const fmtDateEntry = (e) => {
-const hasTime = e.start_time && e.end_time && e.start_time !== "undefined" && e.end_time !== "undefined";
+  const hasTime = e.start_time && e.end_time && e.start_time !== "undefined" && e.end_time !== "undefined";
   if (hasTime) {
     return `${fmtDate(e.date)} · ${fmtTime(e.start_time)}–${fmtTime(e.end_time)} · ${e.hours}h`;
   } else {
@@ -111,203 +111,452 @@ const hasTime = e.start_time && e.end_time && e.start_time !== "undefined" && e.
 const fmtElapsed = secs => {
   const h = Math.floor(secs/3600);
   const m = Math.floor((secs%3600)/60);
-  const s = secs%60;
+  const s = Math.floor(secs%60);
   return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 };
 
-const HISTORICAL_ARCHIVES = [
-  {id:"hist_arc_026",label:"P.O# 026",entries:[{client_id:"c24",date:"09/09/2025",hours:4,start_time:null,end_time:null,total_amount:120,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c24",date:"09/09/2025",hours:2,start_time:null,end_time:null,total_amount:60,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c7",date:"17/09/2025",hours:1.75,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c9",date:"17/09/2025",hours:1.5,start_time:null,end_time:null,total_amount:45,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_027",label:"P.O# 027",entries:[{client_id:"c2",date:"09/09/2025",hours:3.5,start_time:null,end_time:null,total_amount:122.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c4",date:"09/09/2025",hours:1.5,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c13",date:"28/11/2025",hours:3.25,start_time:null,end_time:null,total_amount:113.75,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c3",date:"28/11/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c8",date:"28/11/2025",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_028",label:"P.O# 028",entries:[{client_id:"c1",date:"09/09/2025",hours:2.5,start_time:null,end_time:null,total_amount:87.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c6",date:"19/09/2025",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_029",label:"P.O# 029",entries:[{client_id:"c5",date:"09/09/2025",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c12",date:"10/09/2025",hours:1.5,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c10",date:"10/09/2025",hours:2.5,start_time:null,end_time:null,total_amount:87.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c11",date:"10/09/2025",hours:1.5,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_030",label:"P.O# 030",entries:[{client_id:"c20",date:"09/09/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c21",date:"10/09/2025",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c15",date:"10/09/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_031",label:"P.O# 031",entries:[{client_id:"c16",date:"12/09/2025",hours:1.66,start_time:null,end_time:null,total_amount:58.10,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c17",date:"12/09/2025",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_032",label:"P.O# 032",entries:[{client_id:"c14",date:"12/09/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c19",date:"12/09/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_033",label:"P.O# 033",entries:[{client_id:"c18",date:"19/09/2025",hours:1.5,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c22",date:"22/09/2025",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_034",label:"P.O# 034",entries:[{client_id:"c5",date:"24/09/2025",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_035",label:"P.O# 035",entries:[{client_id:"c7",date:"01/10/2025",hours:4.5,start_time:null,end_time:null,total_amount:157.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_036",label:"P.O# 036",entries:[{client_id:"c1",date:"15/10/2025",hours:3.5,start_time:null,end_time:null,total_amount:122.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c6",date:"17/10/2025",hours:1.5,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_037",label:"P.O# 037",entries:[{client_id:"c3",date:"20/10/2025",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c4",date:"21/10/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_038",label:"P.O# 038",entries:[{client_id:"c2",date:"22/10/2025",hours:2.5,start_time:null,end_time:null,total_amount:87.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c8",date:"23/10/2025",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_039",label:"P.O# 039",entries:[{client_id:"c9",date:"24/10/2025",hours:2.5,start_time:null,end_time:null,total_amount:87.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_040",label:"P.O# 040",entries:[{client_id:"c10",date:"07/11/2025",hours:3.25,start_time:null,end_time:null,total_amount:113.75,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c11",date:"07/11/2025",hours:2.5,start_time:null,end_time:null,total_amount:87.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_041",label:"P.O# 041",entries:[{client_id:"c12",date:"12/11/2025",hours:3.5,start_time:null,end_time:null,total_amount:122.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c13",date:"13/11/2025",hours:2.75,start_time:null,end_time:null,total_amount:96.25,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_042",label:"P.O# 042",entries:[{client_id:"c14",date:"14/11/2025",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_043",label:"P.O# 043",entries:[{client_id:"c14",date:"13/04/2025",hours:0.5,start_time:null,end_time:null,total_amount:17.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c18",date:"13/04/2025",hours:1.5,start_time:null,end_time:null,total_amount:52.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c8",date:"14/04/2025",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c7",date:"13/04/2026",hours:4.5,start_time:null,end_time:null,total_amount:157.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c12",date:"14/04/2026",hours:2.33,start_time:null,end_time:null,total_amount:81.55,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]},
-  {id:"hist_arc_044",label:"P.O# 044",entries:[{client_id:"c10",date:"21/04/2026",hours:2.5,start_time:null,end_time:null,total_amount:87.50,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c11",date:"21/04/2026",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c19",date:"21/04/2026",hours:2,start_time:null,end_time:null,total_amount:70,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c1",date:"22/04/2026",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c4",date:"23/04/2026",hours:1,start_time:null,end_time:null,total_amount:35,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c5",date:"23/04/2026",hours:3,start_time:null,end_time:null,total_amount:105,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null},{client_id:"c1",date:"26/04/2026",hours:4,start_time:null,end_time:null,total_amount:140,currency:"AUD",service_type:"General Cleaning",edited_by_user:false,original_hours:null}]}
-];
-
-const TABS = ["Registrar","Clientes","Facturación","Archivo"];
-const ICONS = ["📝","👥","📊","📂"];
-const C = {border:"#2a2f46",bg:"#0f1117",card:"#1a1f2e",textMuted:"#6b7494",textPrimary:"#f5ede8",accentBright:"#ff8c42",green:"#4ade80",warning:"#fbbf24"};
+const C = {bg:"#1a0a0e",card:"#2a1018",border:"#4a1828",accentBright:"#c42040",text:"#f5ede8",textMuted:"#a08070",green:"#80d880",inputBg:"#200c14",warning:"#f5a040"};
+const SVC = ["Limpieza Regular","Limpieza Profunda","Limpieza Post-Obra","Limpieza Fin de Contrato","Otro"];
+const TABS = ["Registrar","Clientes","Facturacion","Archivo"];
+const ICONS = ["📋","👥","💰","📦"];
 
 function App() {
-  const [entries,setEntries] = useState([]);
-  const [clients,setClients] = useState(SS_CLIENTS_DEFAULT);
-  const [archives,setArchives] = useState([]);
-  const [tab,setTab] = useState(0);
-  const [timer,setTimer] = useState(null);
-  const [eForm,setEForm] = useState({client_id:"",date:today(),start_time:"",end_time:"",hours:0});
-  const [cForm,setCForm] = useState({name:"",address:"",notes:"",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2});
-  const [cEdit,setCEdit] = useState(null);
-  const [eEdit,setEEdit] = useState(null);
-
+  const [clients,setClients]=useState([]);
+  const [entries,setEntries]=useState([]);
+  const [archives,setArchives]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [tab,setTab]=useState(0);
+  const [toast,setToast]=useState(null);
+  const [userName,setUserName]=useState(()=>localStorage.getItem("ssc_username")||"");
+  const [showModal,setShowModal]=useState(false);
+  const [tempName,setTempName]=useState("");
+  
+  // ==== ESTADO DEL CRONÓMETRO ====
+  // runningTimer guarda el servicio en curso. Persiste en localStorage.
+  const [runningTimer, setRunningTimer] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ssc_running_timer");
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [tickNow, setTickNow] = useState(Date.now()); // fuerza re-render cada segundo
+  const [timerClientId, setTimerClientId] = useState("");
+  const [timerNotes, setTimerNotes] = useState("");
+  const [registerMode, setRegisterMode] = useState("timer"); // "timer" o "manual"
+  
+  // Tick del cronómetro: actualiza cada segundo si hay timer corriendo
   useEffect(() => {
-    (async () => {
-      try {
-        const {data:ents} = await sb.from('entries').select('*');
-        const {data:cls} = await sb.from('clients').select('*');
-        const {data:arcs} = await sb.from('archives').select('*');
-        if (ents) setEntries(ents);
-        if (cls) setClients(cls);
-        if (arcs) {
-          let loaded = arcs;
-          const existingIds = new Set(loaded.map(a=>a.id));
-          const missing = HISTORICAL_ARCHIVES.filter(a=>!existingIds.has(a.id));
-          if (missing.length>0) {
-            loaded = [...loaded,...missing];
-            for (const arc of missing) {
-              await sb.from('archives').insert({id:arc.id,label:arc.label,entries:arc.entries,archived_at:new Date().toISOString()}).then();
-            }
-          }
-          setArchives(loaded);
-        } else {
-          setArchives(HISTORICAL_ARCHIVES);
-        }
-      } catch(err) { console.log('DB init:', err); setArchives(HISTORICAL_ARCHIVES); }
-    })();
-  }, []);
-
+    if (!runningTimer) return;
+    const intervalId = setInterval(() => setTickNow(Date.now()), 1000);
+    return () => clearInterval(intervalId);
+  }, [runningTimer]);
+  
+  // Guardar runningTimer en localStorage cuando cambie
   useEffect(() => {
-    let iv;
-    if (timer) {
-      iv = setInterval(() => {
-        const [h,m] = timer.split(":");
-        let total = parseInt(h)*3600 + parseInt(m)*60;
-        total = (total+1) % 86400;
-        const nh = String(Math.floor(total/3600)).padStart(2,"0");
-        const nm = String(Math.floor((total%3600)/60)).padStart(2,"0");
-        setTimer(`${nh}:${nm}`);
-      }, 1000);
+    if (runningTimer) {
+      localStorage.setItem("ssc_running_timer", JSON.stringify(runningTimer));
+    } else {
+      localStorage.removeItem("ssc_running_timer");
     }
-    return () => clearInterval(iv);
-  }, [timer]);
+  }, [runningTimer]);
 
-  const saveEntry = async () => {
-    if (!eForm.client_id) return;
-    const h = eForm.hours || calcHours(eForm.start_time, eForm.end_time);
-    const c = clients.find(x=>x.id===eForm.client_id);
-    const amt = Math.round(h * (c?.rate||35) * 100) / 100;
-    const e = {id:uid(),client_id:eForm.client_id,date:eForm.date,start_time:eForm.start_time||null,end_time:eForm.end_time||null,hours:h,total_amount:amt,currency:c?.currency||"AUD",service_type:"General Cleaning",edited_by_user:false};
-    const ne = eEdit ? entries.map(x=>x.id===eEdit.id?e:x) : [e,...entries];
-    setEntries(ne);
-    try { await sb.from('entries').upsert([e]); } catch(err) { console.log('Save error:', err); }
-    setEForm({client_id:"",date:today(),start_time:"",end_time:"",hours:0});
-    setEEdit(null);
+  const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800);};
+
+  useEffect(()=>{loadData();},[]);
+  useEffect(()=>{if(!userName)setShowModal(true);},[userName]);
+
+  const loadData=async()=>{
+    setLoading(true);
+    try {
+      const [{data:cls},{data:ens},{data:arcs}]=await Promise.all([
+        sb.from("clients").select("*").order("name"),
+        sb.from("entries").select("*").order("date",{ascending:false}),
+        sb.from("archives").select("*").order("id",{ascending:false}),
+      ]);
+      if(cls?.length) setClients(cls);
+      else { const {data:ins}=await sb.from("clients").insert(SS_CLIENTS_DEFAULT).select(); setClients(ins||SS_CLIENTS_DEFAULT); }
+      setEntries(ens||[]);
+      setArchives(arcs||[]);
+    } catch(e){showToast("Error conectando","err");}
+    setLoading(false);
   };
 
-  const editEntry = (e) => {
-    setEEdit(e);
-    setEForm({client_id:e.client_id,date:e.date,start_time:e.start_time||"",end_time:e.end_time||"",hours:e.hours});
-    setTab(0);
-  };
+  const initForm={clientId:"",date:today(),startTime:"",endTime:"",serviceType:SVC[0],notes:"",extras:[]};
+  const [form,setForm]=useState(initForm);
+  const [extraDesc,setExtraDesc]=useState("");
+  const [extraAmt,setExtraAmt]=useState("");
+  const [editId,setEditId]=useState(null);
 
-  const deleteEntry = async (id) => {
-    if (confirm("¿Eliminar este registro?")) {
-      setEntries(entries.filter(e=>e.id!==id));
-      try { await sb.from('entries').delete().eq('id',id); } catch(err) { console.log('Delete error:', err); }
+  const hours=calcHours(form.startTime,form.endTime);
+  const client=clients.find(c=>c.id===form.clientId);
+  const baseAmt=client?Math.round(hours*client.rate*100)/100:0;
+  const extrasTotal=form.extras.reduce((s,x)=>s+x.amount,0);
+  const totalAmt=Math.round((baseAmt+extrasTotal)*100)/100;
+
+  const addExtra=()=>{if(!extraDesc.trim()||!extraAmt)return;setForm(f=>({...f,extras:[...f.extras,{id:uid(),desc:extraDesc.trim(),amount:parseFloat(extraAmt)}]}));setExtraDesc("");setExtraAmt("");};
+  const removeExtra=id=>setForm(f=>({...f,extras:f.extras.filter(x=>x.id!==id)}));
+
+  // ==== FUNCIONES DEL CRONÓMETRO ====
+  
+  const startTimer = () => {
+    if (!timerClientId) {
+      showToast("Selecciona un cliente primero", "err");
+      return;
+    }
+    if (runningTimer) {
+      showToast("Ya hay un servicio en curso", "err");
+      return;
+    }
+    const cli = clients.find(c => c.id === timerClientId);
+    const newTimer = {
+      clientId: timerClientId,
+      clientName: cli?.name || "?",
+      checkInAt: new Date().toISOString(),
+      duracionEstimadaHoras: cli?.duracion_estimada_horas || 1,
+      notes: timerNotes,
+      serviceType: SVC[0]
+    };
+    setRunningTimer(newTimer);
+    setTimerNotes("");
+    showToast(`▶️ Servicio iniciado para ${cli?.name}`);
+  };
+  
+  const stopTimer = async () => {
+    if (!runningTimer) return;
+    if (!confirm(`¿Finalizar el servicio de ${runningTimer.clientName}?`)) return;
+    
+    const checkInAt = new Date(runningTimer.checkInAt);
+    const checkOutAt = new Date();
+    const elapsedMs = checkOutAt - checkInAt;
+    const realHours = Math.round((elapsedMs / 1000 / 3600) * 100) / 100;
+    
+    const cli = clients.find(c => c.id === runningTimer.clientId);
+    const baseAmount = cli ? Math.round(realHours * cli.rate * 100) / 100 : 0;
+    
+    const entry = {
+      client_id: runningTimer.clientId,
+      user_name: userName || "Royman",
+      date: checkInAt.toISOString().slice(0,10),
+      start_time: isoToTime(runningTimer.checkInAt),
+      end_time: isoToTime(checkOutAt.toISOString()),
+      hours: realHours,
+      service_type: runningTimer.serviceType,
+      notes: runningTimer.notes || "",
+      extras: [],
+      base_amount: baseAmount,
+      extras_amount: 0,
+      total_amount: baseAmount,
+      currency: cli?.currency || "AUD",
+      check_in_at: runningTimer.checkInAt,
+      check_out_at: checkOutAt.toISOString(),
+      is_running: false,
+      edited_by_user: false,
+      original_hours: realHours
+    };
+    
+    try {
+      const { data } = await sb.from("entries").insert(entry).select().single();
+      setEntries([data, ...entries]);
+      setRunningTimer(null);
+      showToast(`✅ Servicio guardado: ${realHours}h`);
+    } catch (e) {
+      showToast("Error guardando", "err");
+      console.error(e);
     }
   };
-
-  const saveClient = async () => {
-    if (!cForm.name) return;
-    const c = cEdit || {id:uid()};
-    const nc = {...c,...cForm};
-    const ncl = cEdit ? clients.map(x=>x.id===cEdit.id?nc:x) : [nc,...clients];
-    setClients(ncl);
-    try { await sb.from('clients').upsert([nc]); } catch(err) { console.log('Save client error:', err); }
-    setCForm({name:"",address:"",notes:"",type:"Residencial",rate:35,currency:"AUD",duracion_estimada_horas:2});
-    setCEdit(null);
+  
+  const cancelTimer = () => {
+    if (!confirm("¿Cancelar el servicio en curso? No se guardará nada.")) return;
+    setRunningTimer(null);
+    showToast("Cronómetro cancelado");
   };
 
-  const editClient = (c) => {
-    setCEdit(c);
-    setCForm({name:c.name,address:c.address,notes:c.notes||"",type:c.type,rate:c.rate,currency:c.currency||"AUD",duracion_estimada_horas:c.duracion_estimada_horas||2});
-  };
-
-  const deleteClient = async (id) => {
-    if (confirm("¿Eliminar este cliente?")) {
-      setClients(clients.filter(c=>c.id!==id));
-      try { await sb.from('clients').delete().eq('id',id); } catch(err) { console.log('Delete client error:', err); }
+  const saveEntry=async()=>{
+    if(!form.clientId||!form.date||!form.startTime||!form.endTime){showToast("Completa todos los campos","err");return;}
+    if(hours<=0){showToast("Hora fin debe ser mayor que inicio","err");return;}
+    
+    const isEdit = !!editId;
+    const originalEntry = isEdit ? entries.find(e => e.id === editId) : null;
+    
+    // Detecta si las horas/tiempos cambiaron respecto al original
+    const horasFueronEditadas = isEdit && originalEntry && (
+      originalEntry.start_time !== form.startTime ||
+      originalEntry.end_time !== form.endTime ||
+      Math.abs((originalEntry.hours || 0) - hours) > 0.01
+    );
+    
+    const entry={
+      client_id:form.clientId,
+      user_name:userName||"Royman",
+      date:form.date,
+      start_time:form.startTime,
+      end_time:form.endTime,
+      hours,
+      service_type:form.serviceType,
+      notes:form.notes,
+      extras:form.extras,
+      base_amount:baseAmt,
+      extras_amount:extrasTotal,
+      total_amount:totalAmt,
+      currency:client?.currency||"AUD"
+    };
+    
+    if (horasFueronEditadas) {
+      entry.edited_by_user = true;
+      entry.edited_at = new Date().toISOString();
+      // original_hours: si ya tenía uno guardado, lo mantenemos; si no, usamos las horas que tenía antes
+      entry.original_hours = originalEntry.original_hours || originalEntry.hours;
+    } else if (!isEdit) {
+      entry.edited_by_user = false;
+      entry.original_hours = hours;
     }
+    
+    try {
+      if(editId){
+        await sb.from("entries").update(entry).eq("id",editId);
+        setEntries(entries.map(e=>e.id===editId?{...e,...entry,id:editId}:e));
+        showToast(horasFueronEditadas ? "Registro actualizado (editado)" : "Registro actualizado");
+        setEditId(null);
+      } else {
+        const{data}=await sb.from("entries").insert(entry).select().single();
+        setEntries([data,...entries]);
+        showToast("Registro guardado");
+      }
+      setForm(initForm);
+    } catch(e){showToast("Error guardando","err");console.error(e);}
   };
 
-  const archiveWeek = async (k) => {
-    const we = entries.filter(e=>weekKey(e.date)===k);
-    if (we.length===0) return;
-    const lbl = weekLabel(k);
-    const arc = {id:`arc_${uid()}`,label:lbl,entries:we,archived_at:new Date().toISOString()};
-    setArchives([arc,...archives]);
-    setEntries(entries.filter(e=>!we.find(x=>x.id===e.id)));
-    try { 
-      await sb.from('archives').insert([arc]);
-      for (const e of we) await sb.from('entries').delete().eq('id',e.id);
-    } catch(err) { console.log('Archive error:', err); }
+  const editEntry=e=>{setForm({clientId:e.client_id,date:e.date,startTime:e.start_time,endTime:e.end_time,serviceType:e.service_type,notes:e.notes||"",extras:e.extras||[]});setEditId(e.id);setRegisterMode("manual");setTab(0);window.scrollTo(0,0);};
+  const deleteEntry=async id=>{if(!confirm("Eliminar registro?"))return;await sb.from("entries").delete().eq("id",id);setEntries(entries.filter(e=>e.id!==id));showToast("Eliminado");};
+
+  const exportJSON=()=>{const data={clients,entries,archives};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="timetracker_backup.json";a.click();showToast("Backup exportado");};
+  const importJSON=async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);if(data.entries?.length){const mapped=data.entries.map(en=>({client_id:en.clientId||en.client_id,user_name:en.userName||en.user_name||"Royman",date:en.date,start_time:en.startTime||en.start_time,end_time:en.endTime||en.end_time,hours:en.hours,service_type:en.serviceType||en.service_type,notes:en.notes,extras:en.extras||[],base_amount:en.baseAmount||en.base_amount||0,extras_amount:en.extrasAmount||en.extras_amount||0,total_amount:en.totalAmount||en.total_amount||0,currency:en.currency||"AUD"}));await sb.from("entries").insert(mapped);showToast(`${mapped.length} registros importados`);loadData();}}catch(err){showToast("Error al importar","err");}};
+
+  const weeks=useMemo(()=>{const map={};entries.forEach(e=>{const k=weekKey(e.date);if(!map[k])map[k]=[];map[k].push(e);});return Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]));},[entries]);
+  const exportXLSX=(wEntries,label)=>{const rows=wEntries.map(e=>{const c=clients.find(x=>x.id===e.client_id);return{Fecha:fmtDate(e.date),Empleado:e.user_name,Cliente:c?.name||"?",Direccion:c?.address||"",Tipo:e.service_type,Inicio:fmtTime(e.start_time),Fin:fmtTime(e.end_time),Horas:e.hours,Editado:e.edited_by_user?"SI":"NO",HorasOriginal:e.original_hours||e.hours,Tarifa:c?.rate||0,Moneda:e.currency||"AUD",Base:e.base_amount,Extras:e.extras_amount||0,Total:e.total_amount};});const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Servicios");XLSX.writeFile(wb,`TimeTrack_${label.replace(/[^a-zA-Z0-9]/g,"_")}.xlsx`);};
+
+  const [cForm,setCForm]=useState({name:"",address:"",type:"Residencial",rate:35,currency:"AUD",notes:"",duracion_estimada_horas:1});
+  const [cEdit,setCEdit]=useState(null);
+  const saveClient=async()=>{
+    if(!cForm.name.trim()){showToast("Nombre requerido","err");return;}
+    const data={
+      ...cForm,
+      rate:parseFloat(cForm.rate),
+      duracion_estimada_horas:parseInt(cForm.duracion_estimada_horas)||1
+    };
+    try{
+      if(cEdit){
+        await sb.from("clients").update(data).eq("id",cEdit);
+        setClients(clients.map(c=>c.id===cEdit?{...c,...data}:c));
+        setCEdit(null);
+        showToast("Cliente actualizado");
+      } else {
+        const{data:ins}=await sb.from("clients").insert(data).select().single();
+        setClients([...clients,ins]);
+        showToast("Cliente agregado");
+      }
+      setCForm({name:"",address:"",type:"Residencial",rate:35,currency:"AUD",notes:"",duracion_estimada_horas:1});
+    } catch(e){showToast("Error","err");console.error(e);}
+  };
+  const editClient=c=>{setCForm({name:c.name,address:c.address||"",type:c.type,rate:c.rate,currency:c.currency||"AUD",notes:c.notes||"",duracion_estimada_horas:c.duracion_estimada_horas||1});setCEdit(c.id);setTab(1);};
+  const deleteClient=async id=>{if(!confirm("Eliminar cliente?"))return;await sb.from("clients").delete().eq("id",id);setClients(clients.filter(c=>c.id!==id));showToast("Cliente eliminado");};
+
+  // Cálculos del cronómetro en vivo
+  const timerClient = runningTimer ? clients.find(c => c.id === runningTimer.clientId) : null;
+  const elapsedSecs = runningTimer ? Math.floor((tickNow - new Date(runningTimer.checkInAt).getTime()) / 1000) : 0;
+  const targetSecs = runningTimer ? (runningTimer.duracionEstimadaHoras || 1) * 3600 : 0;
+  const remainingSecs = Math.max(0, targetSecs - elapsedSecs);
+  const isOvertime = elapsedSecs > targetSecs;
+
+  const s={
+    app:{minHeight:"100vh",background:C.bg,color:C.text,paddingBottom:80},
+    header:{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"14px 16px",display:"flex",alignItems:"center",gap:10},
+    tabBar:{position:"fixed",bottom:0,left:0,right:0,background:C.card,borderTop:`1px solid ${C.border}`,display:"flex",zIndex:100},
+    tabBtn:a=>({flex:1,padding:"12px 4px",background:"none",border:"none",color:a?C.accentBright:C.textMuted,fontSize:11,fontFamily:"inherit",fontWeight:a?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3}),
+    card:{background:C.card,borderRadius:12,padding:16,marginBottom:12,border:`1px solid ${C.border}`},
+    lbl:{fontSize:12,color:C.textMuted,marginBottom:4,display:"block",fontWeight:500},
+    inp:{width:"100%",padding:"10px 12px",background:C.inputBg,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:14,fontFamily:"inherit"},
+    sel:{width:"100%",padding:"10px 12px",background:C.inputBg,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:14,fontFamily:"inherit"},
+    btn:{background:C.accentBright,color:"#fff",border:"none",borderRadius:10,padding:"12px 20px",fontFamily:"inherit",fontWeight:700,fontSize:14,cursor:"pointer",width:"100%"},
+    btnS:{background:C.inputBg,color:C.textMuted,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 16px",fontFamily:"inherit",fontWeight:600,fontSize:13,cursor:"pointer"},
+    btnBig:{background:C.accentBright,color:"#fff",border:"none",borderRadius:14,padding:"20px",fontFamily:"inherit",fontWeight:800,fontSize:18,cursor:"pointer",width:"100%",boxShadow:"0 4px 12px rgba(196,32,64,0.3)"},
+    btnStop:{background:"#80d880",color:"#0a2a10",border:"none",borderRadius:14,padding:"20px",fontFamily:"inherit",fontWeight:800,fontSize:18,cursor:"pointer",width:"100%",boxShadow:"0 4px 12px rgba(128,216,128,0.3)"},
+    toast:t=>({position:"fixed",top:16,right:16,left:16,background:t==="err"?"#2a1010":"#0a2a10",border:`1px solid ${t==="err"?"#6b2020":"#206b20"}`,borderRadius:10,padding:"12px 16px",color:t==="err"?"#ff8080":"#80ff80",fontSize:14,fontWeight:500,zIndex:999}),
+    row:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},
+    sec:{padding:"0 16px"},
+    modal:{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:20},
+    mCard:{background:C.card,borderRadius:16,padding:24,width:"100%",maxWidth:340,border:`1px solid ${C.border}`},
+    modeToggle:{display:"flex",gap:0,marginBottom:14,background:C.inputBg,borderRadius:10,padding:4,border:`1px solid ${C.border}`},
+    modeBtn:a=>({flex:1,padding:"10px",background:a?C.accentBright:"transparent",color:a?"#fff":C.textMuted,border:"none",borderRadius:8,fontFamily:"inherit",fontWeight:700,fontSize:13,cursor:"pointer"}),
   };
 
-  const exportXLSX = (ents,label) => {
-    const rows = ents.map(e=>{const c=clients.find(x=>x.id===e.client_id);return [c?.name||"?",e.date,e.hours,c?.rate||0,e.total_amount,e.currency];});
-    const ws = XLSX.utils.aoa_to_sheet([["Cliente","Fecha","Horas","Tarifa","Total",label],...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,"Registros");
-    XLSX.writeFile(wb,`${label}.xlsx`);
-  };
-
-  const weeks = useMemo(() => {
-    const m = {};
-    entries.forEach(e=>{const k=weekKey(e.date);if(!m[k])m[k]=[];m[k].push(e);});
-    return Object.entries(m).sort((a,b)=>b[0].localeCompare(a[0]));
-  }, [entries]);
-
-  const s = {
-    sec:{maxWidth:800,margin:"0 auto",padding:16},
-    card:{background:C.card,borderRadius:12,padding:16,marginBottom:16,border:`1px solid ${C.border}`},
-    btn:{background:"#6c63ff",color:"#fff",border:"none",borderRadius:8,padding:"12px 16px",fontWeight:600,fontSize:14,cursor:"pointer",width:"100%"},
-    btnS:{background:C.bg,color:C.accentBright,border:`1px solid ${C.border}`,borderRadius:6,padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:600},
-    inp:{background:C.bg,color:C.textPrimary,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",fontSize:14,fontFamily:"inherit",width:"100%"},
-    sel:{background:C.bg,color:C.textPrimary,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",fontSize:14,fontFamily:"inherit",width:"100%"},
-    lbl:{display:"block",fontSize:12,fontWeight:600,color:C.textMuted,marginBottom:6},
-    row:{display:"flex",gap:12},
-    tabBar:{display:"flex",gap:0,borderTop:`1px solid ${C.border}`,position:"sticky",bottom:0,background:C.bg},
-    tabBtn:(active)=>({flex:1,padding:12,border:"none",background:active?C.card:C.bg,color:active?C.accentBright:C.textMuted,cursor:"pointer",fontWeight:600,fontSize:12,borderTop:active?`3px solid ${C.accentBright}`:"none"})
-  };
+  if(loading) return <div style={{...s.app,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}><div style={{fontSize:48}}>🧹</div><div style={{color:C.textMuted}}>Cargando...</div></div>;
 
   return (
-    <div style={{background:C.bg,minHeight:"100vh",paddingBottom:60}}>
-      <div style={{background:C.card,padding:16,borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:18,fontWeight:700}}>SS Time Tracker</div><div style={{fontSize:12,color:C.textMuted}}>Super Cleaning Services</div></div>
-        <div style={{fontSize:12,color:C.textMuted}}>Royman</div>
+    <div style={s.app}>
+      {toast&&<div style={s.toast(toast.type)}>{toast.msg}</div>}
+      {showModal&&<div style={s.modal}><div style={s.mCard}>
+        <div style={{fontSize:28,textAlign:"center",marginBottom:8}}>🧹</div>
+        <div style={{fontWeight:700,fontSize:16,textAlign:"center",marginBottom:4}}>Bienvenido</div>
+        <div style={{fontSize:13,color:C.textMuted,textAlign:"center",marginBottom:16}}>Como te llamas?</div>
+        <input style={{...s.inp,marginBottom:14}} placeholder="Tu nombre" value={tempName} onChange={e=>setTempName(e.target.value)}/>
+        <button style={s.btn} onClick={()=>{if(!tempName.trim())return;localStorage.setItem("ssc_username",tempName.trim());setUserName(tempName.trim());setShowModal(false);}}>Entrar</button>
+      </div></div>}
+
+      <div style={s.header}>
+        <span style={{fontSize:22}}>🧹</span>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,fontSize:16}}>SS Time Tracker</div>
+          <div style={{fontSize:11,color:C.textMuted}}>Super Cleaning Services</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <span style={{fontSize:12,color:C.textMuted}}>{userName}</span>
+          <button onClick={()=>{setTempName(userName);setShowModal(true);}} style={{...s.btnS,padding:"4px 10px",fontSize:11}}>✏️</button>
+        </div>
       </div>
 
-      {tab===0&&<div style={{...s.sec,paddingTop:16}}>
-        <div style={s.card}>
-          <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>{eEdit?"✏️ Editar":"📝 Nuevo registro"}</div>
-          <label style={s.lbl}>Cliente</label>
-          <select style={{...s.sel,marginBottom:10}} value={eForm.client_id} onChange={e=>setEForm(f=>({...f,client_id:e.target.value}))}>
-            <option value="">Selecciona cliente</option>
-            {clients.map(c=><option key={c.id} value={c.id}>{c.name} ({c.currency} ${c.rate}/h)</option>)}
-          </select>
-          <label style={s.lbl}>Fecha</label>
-          <input style={{...s.inp,marginBottom:10}} type="date" value={eForm.date} onChange={e=>setEForm(f=>({...f,date:e.target.value}))}/>
-          <div style={{...s.row,marginBottom:10}}>
-            <div><label style={s.lbl}>Inicio</label><input style={s.inp} type="time" value={eForm.start_time} onChange={e=>setEForm(f=>({...f,start_time:e.target.value}))}/></div>
-            <div><label style={s.lbl}>Fin</label><input style={s.inp} type="time" value={eForm.end_time} onChange={e=>setEForm(f=>({...f,end_time:e.target.value}))}/></div>
+      {/* ===== BANNER DE CRONÓMETRO EN CURSO (siempre visible si hay timer) ===== */}
+      {runningTimer && tab !== 0 && (
+        <div style={{...s.sec,paddingTop:12}}>
+          <div onClick={()=>setTab(0)} style={{background:isOvertime?C.warning:C.accentBright,borderRadius:12,padding:"12px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}} className="pulse">
+            <span style={{fontSize:24}}>⏱️</span>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,fontSize:14,color:"#fff"}}>{runningTimer.clientName} en curso</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.85)"}}>{fmtElapsed(elapsedSecs)} {isOvertime && "(tiempo excedido)"}</div>
+            </div>
+            <span style={{color:"#fff",fontSize:18}}>›</span>
           </div>
-          <label style={s.lbl}>Horas (manual si es necesario)</label>
-          <input style={{...s.inp,marginBottom:14}} type="number" step="0.25" value={eForm.hours} onChange={e=>setEForm(f=>({...f,hours:parseFloat(e.target.value)||0}))}/>
-          <button style={s.btn} onClick={saveEntry}>{eEdit?"💾 Actualizar":"✅ Registrar"}</button>
-          {eEdit&&<button style={{...s.btnS,width:"100%",marginTop:8}} onClick={()=>{setEEdit(null);setEForm({client_id:"",date:today(),start_time:"",end_time:"",hours:0});}}>Cancelar</button>}
         </div>
+      )}
+
+      {tab===0&&<div style={{...s.sec,paddingTop:16}}>
+        
+        {/* ===== SECCIÓN CRONÓMETRO EN VIVO (cuando hay timer activo) ===== */}
+        {runningTimer && (
+          <div style={{...s.card,border:`2px solid ${isOvertime?C.warning:C.accentBright}`}}>
+            <div style={{textAlign:"center",marginBottom:12}}>
+              <div style={{fontSize:11,color:C.textMuted,letterSpacing:1,fontWeight:600}}>SERVICIO EN CURSO</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.accentBright,marginTop:4}}>{runningTimer.clientName}</div>
+              {timerClient?.address && <div style={{fontSize:12,color:C.textMuted,marginTop:2}}>{timerClient.address}</div>}
+            </div>
+            
+            <div style={{textAlign:"center",padding:"20px 0",background:C.inputBg,borderRadius:12,marginBottom:14}}>
+              <div className={isOvertime?"":"pulse"} style={{fontSize:42,fontWeight:800,fontFamily:"monospace",color:isOvertime?C.warning:C.text,letterSpacing:2}}>
+                {fmtElapsed(elapsedSecs)}
+              </div>
+              <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>
+                {isOvertime ? (
+                  <span style={{color:C.warning,fontWeight:600}}>⚠️ Excedido por {fmtElapsed(elapsedSecs - targetSecs)}</span>
+                ) : (
+                  <span>Quedan {fmtElapsed(remainingSecs)} de {runningTimer.duracionEstimadaHoras}h estimadas</span>
+                )}
+              </div>
+            </div>
+            
+            {timerClient && (
+              <div style={{background:C.inputBg,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:13}}>
+                💵 Tarifa: <b>${timerClient.rate}/h {timerClient.currency}</b> · Inicio: <b>{isoToTime(runningTimer.checkInAt)}</b>
+              </div>
+            )}
+            
+            {timerClient?.notes && (
+              <div style={{background:"#1a0a0e",border:`1px solid ${C.accentBright}`,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:12}}>
+                📋 <b>Notas del cliente:</b> {timerClient.notes}
+              </div>
+            )}
+            
+            <button onClick={stopTimer} style={s.btnStop}>🏁 Finalizar servicio</button>
+            <button onClick={cancelTimer} style={{...s.btnS,width:"100%",marginTop:8,color:"#ff6060"}}>✕ Cancelar (sin guardar)</button>
+          </div>
+        )}
+        
+        {/* ===== SI NO HAY TIMER ACTIVO: mostrar inicio o registro manual ===== */}
+        {!runningTimer && (
+          <>
+            <div style={{display:"flex",gap:8,marginBottom:12}}>
+              <button onClick={exportJSON} style={{...s.btnS,flex:1,fontSize:12,padding:"8px"}}>📦 Exportar JSON</button>
+              <label style={{...s.btnS,flex:1,fontSize:12,padding:"8px",textAlign:"center",cursor:"pointer"}}>📥 Importar JSON<input type="file" accept=".json" onChange={importJSON} style={{display:"none"}}/></label>
+            </div>
+            
+            {/* Toggle entre cronómetro y registro manual */}
+            {!editId && (
+              <div style={s.modeToggle}>
+                <button style={s.modeBtn(registerMode==="timer")} onClick={()=>setRegisterMode("timer")}>⏱️ Cronómetro</button>
+                <button style={s.modeBtn(registerMode==="manual")} onClick={()=>setRegisterMode("manual")}>✏️ Manual</button>
+              </div>
+            )}
+            
+            {/* MODO CRONÓMETRO: iniciar nuevo servicio */}
+            {!editId && registerMode==="timer" && (
+              <div style={s.card}>
+                <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>▶️ Iniciar servicio</div>
+                <label style={s.lbl}>Cliente</label>
+                <select style={{...s.sel,marginBottom:12}} value={timerClientId} onChange={e=>setTimerClientId(e.target.value)}>
+                  <option value="">Seleccionar cliente...</option>
+                  {[...clients].sort((a,b)=>a.name.localeCompare(b.name)).map(c=><option key={c.id} value={c.id}>{c.name} — ${c.rate}/h ({c.duracion_estimada_horas||1}h)</option>)}
+                </select>
+                
+                {timerClientId && (() => {
+                  const sel = clients.find(c => c.id === timerClientId);
+                  return sel?.notes ? (
+                    <div style={{background:"#1a0a0e",border:`1px solid ${C.accentBright}`,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:12}}>
+                      📋 <b>Notas:</b> {sel.notes}
+                    </div>
+                  ) : null;
+                })()}
+                
+                <label style={s.lbl}>Notas iniciales (opcional)</label>
+                <input style={{...s.inp,marginBottom:14}} placeholder="Algo a tener en cuenta..." value={timerNotes} onChange={e=>setTimerNotes(e.target.value)}/>
+                
+                <button style={s.btnBig} onClick={startTimer}>▶️ Iniciar servicio</button>
+                <div style={{textAlign:"center",fontSize:11,color:C.textMuted,marginTop:8}}>
+                  El cronómetro arrancará automáticamente
+                </div>
+              </div>
+            )}
+            
+            {/* MODO MANUAL o EDICIÓN: formulario tradicional */}
+            {(registerMode==="manual" || editId) && (
+              <div style={s.card}>
+                <div style={{fontWeight:700,fontSize:15,marginBottom:14,color:C.accentBright}}>{editId?"✏️ Editar registro":"✏️ Registro manual"}</div>
+                
+                {editId && entries.find(e=>e.id===editId)?.edited_by_user && (
+                  <div style={{background:"#3a2010",border:`1px solid ${C.warning}`,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:12,color:C.warning}}>
+                    ⚠️ Este registro ya fue editado anteriormente
+                  </div>
+                )}
+                
+                <label style={s.lbl}>Cliente</label>
+                <select style={{...s.sel,marginBottom:12}} value={form.clientId} onChange={e=>setForm(f=>({...f,clientId:e.target.value}))}>
+                  <option value="">Seleccionar cliente...</option>
+                  {[...clients].sort((a,b)=>a.name.localeCompare(b.name)).map(c=><option key={c.id} value={c.id}>{c.name} — ${c.rate}/h</option>)}
+                </select>
+                {client?.notes&&<div style={{background:"#1a0a0e",border:`1px solid ${C.accentBright}`,borderRadius:8,padding:"10px 12px",marginBottom:12,fontSize:12}}>📋 <b>Notas:</b> {client.notes}</div>}
+                <label style={s.lbl}>Fecha</label>
+                <input style={{...s.inp,marginBottom:12}} type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/>
+                <div style={{...s.row,marginBottom:12}}>
+                  <div><label style={s.lbl}>Inicio</label><input style={s.inp} type="time" value={form.startTime} onChange={e=>setForm(f=>({...f,startTime:e.target.value}))}/></div>
+                  <div><label style={s.lbl}>Fin</label><input style={s.inp} type="time" value={form.endTime} onChange={e=>setForm(f=>({...f,endTime:e.target.value}))}/></div>
+                </div>
+                {hours>0&&<div style={{background:C.inputBg,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:13}}>⏱ <b>{hours}h</b> · Base: <b>${baseAmt} {client?.currency||"AUD"}</b></div>}
+                <label style={s.lbl}>Tipo de servicio</label>
+                <select style={{...s.sel,marginBottom:12}} value={form.serviceType} onChange={e=>setForm(f=>({...f,serviceType:e.target.value}))}>{SVC.map(t=><option key={t}>{t}</option>)}</select>
+                <label style={s.lbl}>Notas</label>
+                <input style={{...s.inp,marginBottom:14}} placeholder="Observaciones..." value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))}/>
+                <div style={{fontSize:13,fontWeight:600,color:C.textMuted,marginBottom:8}}>Cargos adicionales</div>
+                {form.extras.map(x=><div key={x.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:C.inputBg,borderRadius:8,padding:"8px 10px",marginBottom:6,fontSize:13}}><span>{x.desc}</span><span style={{color:C.green}}>${x.amount} <button onClick={()=>removeExtra(x.id)} style={{background:"none",border:"none",color:"#ff6060",cursor:"pointer"}}>✕</button></span></div>)}
+                <div style={{display:"flex",gap:8,marginBottom:14}}>
+                  <input style={{...s.inp,flex:2}} placeholder="Descripcion" value={extraDesc} onChange={e=>setExtraDesc(e.target.value)}/>
+                  <input style={{...s.inp,flex:1}} placeholder="$" type="number" value={extraAmt} onChange={e=>setExtraAmt(e.target.value)}/>
+                  <button onClick={addExtra} style={{...s.btnS,padding:"10px 14px"}}>+</button>
+                </div>
+                {form.extras.length>0&&<div style={{background:C.inputBg,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:13}}>💰 Total: <b>${totalAmt} {client?.currency||"AUD"}</b></div>}
+                <button style={s.btn} onClick={saveEntry}>{editId?"💾 Actualizar":"✅ Guardar registro"}</button>
+                {editId&&<button style={{...s.btnS,width:"100%",marginTop:8}} onClick={()=>{setEditId(null);setForm(initForm);setRegisterMode("timer");}}>Cancelar</button>}
+              </div>
+            )}
+          </>
+        )}
         
         {/* Lista de registros recientes */}
         {entries.length>0&&<div style={s.card}>
