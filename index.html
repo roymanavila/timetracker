@@ -80,6 +80,7 @@ const SS_CLIENTS_DEFAULT = [
   {id:"c25",name:"Alli",address:"123 Morgan Ave, Melrose Park SA",type:"Residencial",rate:30,currency:"AUD",duracion_estimada_horas:2},
 ];
 
+const HISTORICAL_ARCHIVES = [];
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
 const fmtDate = d => { if(!d) return ""; const [y,m,dd]=d.split("-"); return `${dd}/${m}/${y}`; };
