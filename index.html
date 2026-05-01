@@ -98,8 +98,15 @@ const isoToTime = iso => {
 };
 
 // Renderiza fecha + horas, sin mostrar undefined si faltan start_time/end_time
-const fmtDateEntry = (e) => {
-  const hasTime = e.start_time && e.end_time && e.start_time !== "undefined" && e.end_time !== "undefined";
+const fmtDateEntry = (e) =>
+  const fmtDateEntry = (e) => {
+  const hasTime = e.start_time && e.end_time && e.start_time !== "undefined" && e.start_time !== null && e.end_time !== "undefined" && e.end_time !== null;
+  if (hasTime) {
+    return `${fmtDate(e.date)} · ${fmtTime(e.start_time)}–${fmtTime(e.end_time)} · ${e.hours}h`;
+  } else {
+    return `${fmtDate(e.date)} · ${e.hours}h`;
+  }
+};
   if (hasTime) {
     return `${fmtDate(e.date)} · ${fmtTime(e.start_time)}–${fmtTime(e.end_time)} · ${e.hours}h`;
   } else {
